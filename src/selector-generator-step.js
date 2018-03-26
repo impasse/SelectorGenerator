@@ -1,4 +1,9 @@
 /* globals DomNodePathStep, cssEscaper, autogenCheck */ //eslint-disable-line no-unused-vars
+import _ from './shim';
+import DomNodePathStep from './dom-node-path-step';
+import cssEscaper from './css-escaper';
+import { autogenCheck } from './autogen-check';
+
 /**
  * @param {Object?} options
  * @param {boolean?} options.withoutNthChild
@@ -222,4 +227,4 @@ function SelectorGeneratorStep(options) {
 
 }
 
-exports.SelectorGeneratorStep = SelectorGeneratorStep;
+export default SelectorGeneratorStep;

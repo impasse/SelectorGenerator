@@ -35,7 +35,7 @@ var getFuncNative = function (fun) {
     return fun && isFuncNative(fun) ? fun : null;
 };
 
-var array_reduce = uncurryThis(
+var reduce = uncurryThis(
     Array.prototype.reduce && isFuncNative(Array.prototype.reduce) ? Array.prototype.reduce : function (callback, basis) {
         var index = 0,
             length = this.length;
@@ -64,7 +64,7 @@ var array_reduce = uncurryThis(
     }
 );
 
-var array_map = uncurryThis(
+var map = uncurryThis(
     Array.prototype.map && isFuncNative(Array.prototype.map) ? Array.prototype.map : function (callback, thisp) {
         var self = this;
         var collect = [];
@@ -75,7 +75,7 @@ var array_map = uncurryThis(
     }
 );
 
-var array_filter = uncurryThis(
+var filter = uncurryThis(
     Array.prototype.filter && isFuncNative(Array.prototype.filter) ? Array.prototype.filter :
         function (predicate, that) {
             var other = [], v;
@@ -102,7 +102,7 @@ var array_filter = uncurryThis(
  * @type {Function}
  * @private
  */
-var array_indexOf = uncurryThis(getFuncNative(Array.prototype.indexOf) ||
+var indexOf = uncurryThis(getFuncNative(Array.prototype.indexOf) ||
     function (searchElement, fromIndex) {
         var k;
 
@@ -155,7 +155,7 @@ var array_indexOf = uncurryThis(getFuncNative(Array.prototype.indexOf) ||
  * @type {Function}
  * @private
  */
-var array_find = uncurryThis(getFuncNative(Array.prototype.find) ||
+var find = uncurryThis(getFuncNative(Array.prototype.find) ||
     function (predicate, that) {
         var length = this.length;//eslint-disable-line no-invalid-this
         if (typeof predicate !== "function") {
@@ -174,11 +174,11 @@ var array_find = uncurryThis(getFuncNative(Array.prototype.find) ||
     }
 );
 
-shim.reduce = array_reduce;
-shim.map = array_map;
-shim.filter = array_filter;
-shim.indexOf = array_indexOf;
-shim.find = array_find;
 
-var _ = shim; //eslint-disable-line no-unused-vars
-exports._  = shim;
+export default{
+    reduce,
+    map,
+    filter,
+    indexOf,
+    find
+};

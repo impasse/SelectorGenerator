@@ -17,4 +17,4 @@ DomNodePathStep.prototype = {
     }
 };
 
-exports.DomNodePathStep = DomNodePathStep;
+export default DomNodePathStep;

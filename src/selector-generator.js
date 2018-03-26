@@ -1,4 +1,7 @@
 /*global  SelectorGeneratorStep */ //eslint-disable-line no-unused-vars
+import _ from './shim';
+import SelectorGeneratorStep from './selector-generator-step';
+
 /**
  * @class
  * get unique selector, path of node
@@ -248,4 +251,5 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
     this.getPath = getPath;
 }
 
-exports.SelectorGenerator = SelectorGenerator;
+
+export default SelectorGenerator;
