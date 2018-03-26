@@ -1,4 +1,3 @@
-/*global  SelectorGeneratorStep */ //eslint-disable-line no-unused-vars
 import _ from './shim';
 import SelectorGeneratorStep from './selector-generator-step';
 
@@ -44,9 +43,10 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
 
     /**
      * @param {HTMLElement} node
+     * @param {boolean?} optimized
      * @return {string}
      */
-    function getSelector(node) {
+    function getSelector(node, optimized = true) {
         if (!node || node.nodeType !== 1) {
             return "";
         }
@@ -59,7 +59,7 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
                 break; // Error - bail out early.
             }
             steps.push(step);
-            if (step.optimized) {
+            if (optimized) {
                 if (isUniqueSelector(buildSelector(steps))) {
                     break;
                 }

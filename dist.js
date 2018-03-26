@@ -291,8 +291,6 @@ function autogenCheck(val){
 
 }
 
-/* globals DomNodePathStep, cssEscaper, autogenCheck */ //eslint-disable-line no-unused-vars
-
 /**
  * @param {Object?} options
  * @param {boolean?} options.withoutNthChild
@@ -516,8 +514,6 @@ function SelectorGeneratorStep(options) {
 
 }
 
-/*global  SelectorGeneratorStep */ //eslint-disable-line no-unused-vars
-
 /**
  * @class
  * get unique selector, path of node
@@ -560,9 +556,10 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
 
     /**
      * @param {HTMLElement} node
+     * @param {boolean?} optimized
      * @return {string}
      */
-    function getSelector(node) {
+    function getSelector(node, optimized = true) {
         if (!node || node.nodeType !== 1) {
             return "";
         }
@@ -575,7 +572,7 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
                 break; // Error - bail out early.
             }
             steps.push(step);
-            if (step.optimized) {
+            if (optimized) {
                 if (isUniqueSelector(buildSelector(steps))) {
                     break;
                 }

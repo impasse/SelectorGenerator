@@ -1,10 +1,11 @@
 {
   "name": "@uuz.io/selector-generator",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "JavaScript object that creates a unique CSS selector for a given DOM element. It has no external dependencies.",
   "main": "dist.js",
   "scripts": {
-    "build": "rollup --format=cjs --file=dist.js -- src/selector-generator.js"
+    "build": "rollup --format=cjs --file=dist.js -- src/selector-generator.js",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
