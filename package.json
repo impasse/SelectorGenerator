@@ -1,10 +1,10 @@
 {
   "name": "@uuz.io/selector-generator",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "JavaScript object that creates a unique CSS selector for a given DOM element. It has no external dependencies.",
   "main": "dist.js",
   "scripts": {
-    "build": "rollup --format=cjs --file=dist.js -- src/selector-generator.js",
+    "build": "rollup -c rollup.config.js",
     "prepublish": "npm run build"
   },
   "repository": {
@@ -22,7 +22,12 @@
   },
   "homepage": "https://github.com/flamencist/SelectorGenerator#readme",
   "devDependencies": {
-    "rollup": "^0.57.1"
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.6.1",
+    "rollup": "^0.57.1",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-node-resolve": "^3.3.0"
   },
   "files": [
     "dist.js"

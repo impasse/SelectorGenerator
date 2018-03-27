@@ -1,5 +1,11 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
 //noinspection JSUnresolvedVariable
 var call = Function.call;
 
@@ -19,10 +25,8 @@ function uncurryThis(f) {
  * @param f {Function} function
  * @returns {boolean}
  */
-var isFuncNative = function (f) {
-    return !!f && (typeof f).toLowerCase() === "function"
-        && (f === Function.prototype
-        || /^\s*function\s*(\b[a-z$_][a-z0-9$_]*\b)*\s*\((|([a-z$_][a-z0-9$_]*)(\s*,[a-z$_][a-z0-9$_]*)*)\)\s*\{\s*\[native code\]\s*\}\s*$/i.test(String(f)));
+var isFuncNative = function isFuncNative(f) {
+    return !!f && (typeof f === "undefined" ? "undefined" : _typeof(f)).toLowerCase() === "function" && (f === Function.prototype || /^\s*function\s*(\b[a-z$_][a-z0-9$_]*\b)*\s*\((|([a-z$_][a-z0-9$_]*)(\s*,[a-z$_][a-z0-9$_]*)*)\)\s*\{\s*\[native code\]\s*\}\s*$/i.test(String(f)));
 };
 
 /**
@@ -32,62 +36,56 @@ var isFuncNative = function (f) {
  * @return {null}
  * @private
  */
-var getFuncNative = function (fun) {
+var getFuncNative = function getFuncNative(fun) {
     return fun && isFuncNative(fun) ? fun : null;
 };
 
-var reduce = uncurryThis(
-    Array.prototype.reduce && isFuncNative(Array.prototype.reduce) ? Array.prototype.reduce : function (callback, basis) {
-        var index = 0,
-            length = this.length;
-        // concerning the initial value, if one is not provided
-        if (arguments.length === 1) {
-            // seek to the first value in the array, accounting
-            // for the possibility that is is a sparse array
-            do {
-                if (index in this) {
-                    basis = this[index++];
-                    break;
-                }
-                if (++index >= length) {
-                    throw new TypeError();
-                }
-            } while (1);
-        }
-        // reduce
-        for (; index < length; index++) {
-            // account for the possibility that the array is sparse
+var reduce = uncurryThis(Array.prototype.reduce && isFuncNative(Array.prototype.reduce) ? Array.prototype.reduce : function (callback, basis) {
+    var index = 0,
+        length = this.length;
+    // concerning the initial value, if one is not provided
+    if (arguments.length === 1) {
+        // seek to the first value in the array, accounting
+        // for the possibility that is is a sparse array
+        do {
             if (index in this) {
-                basis = callback(basis, this[index], index);
+                basis = this[index++];
+                break;
             }
-        }
-        return basis;
-    }
-);
-
-var map = uncurryThis(
-    Array.prototype.map && isFuncNative(Array.prototype.map) ? Array.prototype.map : function (callback, thisp) {
-        var self = this;
-        var collect = [];
-        array_reduce(self, function (undefined, value, index) {
-            collect.push(callback.call(thisp, value, index, self));
-        }, void 0);
-        return collect;
-    }
-);
-
-var filter = uncurryThis(
-    Array.prototype.filter && isFuncNative(Array.prototype.filter) ? Array.prototype.filter :
-        function (predicate, that) {
-            var other = [], v;
-            for (var i = 0, n = this.length; i < n; i++) {
-                if (i in this && predicate.call(that, v = this[i], i, this)) {
-                    other.push(v);
-                }
+            if (++index >= length) {
+                throw new TypeError();
             }
-            return other;
+        } while (1);
+    }
+    // reduce
+    for (; index < length; index++) {
+        // account for the possibility that the array is sparse
+        if (index in this) {
+            basis = callback(basis, this[index], index);
         }
-);
+    }
+    return basis;
+});
+
+var map = uncurryThis(Array.prototype.map && isFuncNative(Array.prototype.map) ? Array.prototype.map : function (callback, thisp) {
+    var self = this;
+    var collect = [];
+    array_reduce(self, function (undefined, value, index) {
+        collect.push(callback.call(thisp, value, index, self));
+    }, void 0);
+    return collect;
+});
+
+var filter = uncurryThis(Array.prototype.filter && isFuncNative(Array.prototype.filter) ? Array.prototype.filter : function (predicate, that) {
+    var other = [],
+        v;
+    for (var i = 0, n = this.length; i < n; i++) {
+        if (i in this && predicate.call(that, v = this[i], i, this)) {
+            other.push(v);
+        }
+    }
+    return other;
+});
 
 /**
  * shim for array.indexOf
@@ -103,42 +101,42 @@ var filter = uncurryThis(
  * @type {Function}
  * @private
  */
-var indexOf = uncurryThis(getFuncNative(Array.prototype.indexOf) ||
-    function (searchElement, fromIndex) {
-        var k;
+var indexOf = uncurryThis(getFuncNative(Array.prototype.indexOf) || function (searchElement, fromIndex) {
+    var k;
 
-        if (!this || !this.length) {//eslint-disable-line no-invalid-this
-            throw new TypeError("\"this\" is null or not defined");
-        }
+    if (!this || !this.length) {
+        //eslint-disable-line no-invalid-this
+        throw new TypeError("\"this\" is null or not defined");
+    }
 
-        var O = Object(this);//eslint-disable-line no-invalid-this
+    var O = Object(this); //eslint-disable-line no-invalid-this
 
-        var len = O.length >>> 0;
+    var len = O.length >>> 0;
 
-        if (len === 0) {
-            return -1;
-        }
-
-        var n = +fromIndex || 0;
-
-        if (Math.abs(n) === Infinity) {
-            n = 0;
-        }
-
-        if (n >= len) {
-            return -1;
-        }
-
-        k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
-
-        while (k < len) {
-            if (k in O && O[k] === searchElement) {
-                return k;
-            }
-            k++;
-        }
+    if (len === 0) {
         return -1;
-    });
+    }
+
+    var n = +fromIndex || 0;
+
+    if (Math.abs(n) === Infinity) {
+        n = 0;
+    }
+
+    if (n >= len) {
+        return -1;
+    }
+
+    k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+    while (k < len) {
+        if (k in O && O[k] === searchElement) {
+            return k;
+        }
+        k++;
+    }
+    return -1;
+});
 
 /**
  * array find shim
@@ -156,32 +154,29 @@ var indexOf = uncurryThis(getFuncNative(Array.prototype.indexOf) ||
  * @type {Function}
  * @private
  */
-var find = uncurryThis(getFuncNative(Array.prototype.find) ||
-    function (predicate, that) {
-        var length = this.length;//eslint-disable-line no-invalid-this
-        if (typeof predicate !== "function") {
-            throw new TypeError("Array#find: predicate must be a function");
-        }
-        if (length === 0) {
-            return undefined;
-        }
-        for (var i = 0, value; i < length; i++) {
-            value = this[i];//eslint-disable-line no-invalid-this
-            if (predicate.call(that, value, i, this)) {
-                return value;
-            }
-        }
+var find = uncurryThis(getFuncNative(Array.prototype.find) || function (predicate, that) {
+    var length = this.length; //eslint-disable-line no-invalid-this
+    if (typeof predicate !== "function") {
+        throw new TypeError("Array#find: predicate must be a function");
+    }
+    if (length === 0) {
         return undefined;
     }
-);
-
+    for (var i = 0, value; i < length; i++) {
+        value = this[i]; //eslint-disable-line no-invalid-this
+        if (predicate.call(that, value, i, this)) {
+            return value;
+        }
+    }
+    return undefined;
+});
 
 var _ = {
-    reduce,
-    map,
-    filter,
-    indexOf,
-    find
+    reduce: reduce,
+    map: map,
+    filter: filter,
+    indexOf: indexOf,
+    find: find
 };
 
 /**
@@ -189,7 +184,7 @@ var _ = {
  * @param {string} value
  * @param {boolean} optimized
  */
-var DomNodePathStep = function (value, optimized) {
+var DomNodePathStep = function DomNodePathStep(value, optimized) {
     this.value = value;
     this.optimized = optimized || false;
 };
@@ -198,7 +193,7 @@ DomNodePathStep.prototype = {
     /**
      * @return {string}
      */
-    toString: function () {
+    toString: function toString() {
         return this.value;
     }
 };
@@ -215,7 +210,7 @@ function escapeIdentifierIfNeeded(ident) {
     var shouldEscapeFirst = /^(?:[0-9]|-[0-9-]?)/.test(ident);
     var lastIndex = ident.length - 1;
     return ident.replace(/./g, function (c, i) {
-        return ((shouldEscapeFirst && i === 0) || !isCssIdentChar(c)) ? escapeAsciiChar(c, i === lastIndex) : c;
+        return shouldEscapeFirst && i === 0 || !isCssIdentChar(c) ? escapeAsciiChar(c, i === lastIndex) : c;
     });
 }
 
@@ -259,36 +254,29 @@ function isCssIdentChar(c) {
  * @return {boolean}
  */
 function isCssIdentifier(value) {
-    return /^-?[a-zA-Z_][a-zA-Z0-9_-]*$/.test(value);
+    return (/^-?[a-zA-Z_][a-zA-Z0-9_-]*$/.test(value)
+    );
 }
 
-
 var cssEscaper = {
-    escape: escapeIdentifierIfNeeded,
+    escape: escapeIdentifierIfNeeded
 };
 
-var autogenRegexps = [
-    /\d{4,}/,
-    /^ember\d+/,
-    /^[0-9_-]+$/,
-    /^_\d{2,}/,
-    /([a-f_-]*[0-9_-]){6,}/i
-];
+var autogenRegexps = [/\d{4,}/, /^ember\d+/, /^[0-9_-]+$/, /^_\d{2,}/, /([a-f_-]*[0-9_-]){6,}/i];
 
 /**
  * check auto-generated selectors
  * @param {String} val
  * @return {boolean} is auto-generated
  */
-function autogenCheck(val){
-    if(!val){
+function autogenCheck(val) {
+    if (!val) {
         return false;
     }
-    var autogenerated = _.find(autogenRegexps,function(reg){
+    var autogenerated = _.find(autogenRegexps, function (reg) {
         return reg.test(val);
     });
     return !!autogenerated;
-
 }
 
 /**
@@ -301,9 +289,9 @@ function autogenCheck(val){
  */
 function SelectorGeneratorStep(options) {
     options = options || {
-            withoutNthChild: false,
-            targetNode: null
-        };
+        withoutNthChild: false,
+        targetNode: null
+    };
 
     /**
      * generate selector for current node
@@ -327,11 +315,11 @@ function SelectorGeneratorStep(options) {
         }
         var isRootNode = !parent || parent.nodeType === 9;
         if (isRootNode) // document node
-        {
-            return new DomNodePathStep(nodeName, true);
-        }
+            {
+                return new DomNodePathStep(nodeName, true);
+            }
 
-        var hasAttributeName = hasUniqueAttributeName(node,siblingsWithSameNodeName);
+        var hasAttributeName = hasUniqueAttributeName(node, siblingsWithSameNodeName);
         var needsClassNames = siblingsWithSameNodeName.length > 0;
         var needsNthChild = isNeedsNthChild(node, siblingsWithSameNodeName, hasAttributeName);
         var needsType = hasType(node);
@@ -353,7 +341,8 @@ function SelectorGeneratorStep(options) {
             result += ":nth-child(" + (ownIndex + 1) + ")";
         } else if (needsClassNames) {
             var prefixedOwnClassNamesArray = prefixedElementClassNames(node);
-            for (var prefixedName in keySet(prefixedOwnClassNamesArray)) { //eslint-disable-line guard-for-in
+            for (var prefixedName in keySet(prefixedOwnClassNamesArray)) {
+                //eslint-disable-line guard-for-in
                 result += "." + cssEscaper.escape(prefixedName.substr(1));
             }
         }
@@ -361,13 +350,13 @@ function SelectorGeneratorStep(options) {
         return new DomNodePathStep(result, false);
     };
 
-    function hasUniqueAttributeName(node, siblingsWithSameNodeName){
+    function hasUniqueAttributeName(node, siblingsWithSameNodeName) {
         var attributeName = node.getAttribute("name");
-        if(!attributeName || autogenCheck(attributeName)){
+        if (!attributeName || autogenCheck(attributeName)) {
             return false;
         }
         var isSimpleFormElement = isSimpleInput(node, options.targetNode === node) || isFormWithoutId(node);
-        return !!(isSimpleFormElement && attributeName && !_.find(siblingsWithSameNodeName,function(sibling){
+        return !!(isSimpleFormElement && attributeName && !_.find(siblingsWithSameNodeName, function (sibling) {
             return sibling.getAttribute("name") === attributeName;
         }));
     }
@@ -375,7 +364,7 @@ function SelectorGeneratorStep(options) {
     function isNeedsNthChild(node, siblings, isUniqueAttributeName) {
         var needsNthChild = false;
         var prefixedOwnClassNamesArray = prefixedElementClassNames(node);
-        for (var i = 0; (!needsNthChild) && i < siblings.length; ++i) {
+        for (var i = 0; !needsNthChild && i < siblings.length; ++i) {
             var sibling = siblings[i];
             if (needsNthChild) {
                 continue;
@@ -401,7 +390,7 @@ function SelectorGeneratorStep(options) {
                     continue;
                 }
                 delete ownClassNames[siblingClass];
-                if (!--ownClassNameCount && !isUniqueAttributeName) {
+                if (! --ownClassNameCount && !isUniqueAttributeName) {
                     needsNthChild = true;
                     break;
                 }
@@ -417,7 +406,7 @@ function SelectorGeneratorStep(options) {
     }
 
     function hasType(node) {
-        return node.getAttribute("type") && ( (isSimpleInput(node, options.targetNode === node) && !getClassName(node)) || isFormWithoutId(node) || isButtonWithoutId(node));
+        return node.getAttribute("type") && (isSimpleInput(node, options.targetNode === node) && !getClassName(node) || isFormWithoutId(node) || isButtonWithoutId(node));
     }
 
     /**
@@ -438,15 +427,15 @@ function SelectorGeneratorStep(options) {
      */
     function hasId(node, siblings) {
         var id = node.getAttribute("id");
-        if(!id){
+        if (!id) {
             return false;
         }
-        if(autogenCheck(id)){
+        if (autogenCheck(id)) {
             return false;
         }
         return _.filter(siblings, function (s) {
-                return s.getAttribute("id") === id;
-            }).length === 0;
+            return s.getAttribute("id") === id;
+        }).length === 0;
     }
 
     /**
@@ -474,7 +463,7 @@ function SelectorGeneratorStep(options) {
         }
 
         var classes = classAttribute.split(/\s+/g);
-        var existClasses = _.filter(classes, function(c){
+        var existClasses = _.filter(classes, function (c) {
             return c && !autogenCheck(c);
         });
         return _.map(existClasses, function (name) {
@@ -499,7 +488,7 @@ function SelectorGeneratorStep(options) {
      * @return {boolean}
      */
     function isSimpleInput(node, isTargetNode) {
-        return isTargetNode && node.nodeName.toLowerCase() === "input" ;
+        return isTargetNode && node.nodeName.toLowerCase() === "input";
     }
 
     /**
@@ -511,7 +500,6 @@ function SelectorGeneratorStep(options) {
     function getClassName(node) {
         return node.getAttribute("class") || node.className;
     }
-
 }
 
 /**
@@ -521,7 +509,8 @@ function SelectorGeneratorStep(options) {
  * @param {function?} options.querySelectorAll
  * @constructor
  */
-function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
+function SelectorGenerator(options) {
+    //eslint-disable-line no-unused-vars
 
     options = options || {};
 
@@ -559,11 +548,13 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
      * @param {boolean?} optimized
      * @return {string}
      */
-    function getSelector(node, optimized = true) {
+    function getSelector(node) {
+        var optimized = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
         if (!node || node.nodeType !== 1) {
             return "";
         }
-        var selectorGeneratorStep = new SelectorGeneratorStep({targetNode: node});
+        var selectorGeneratorStep = new SelectorGeneratorStep({ targetNode: node });
         var steps = [];
         var contextNode = node;
         while (contextNode) {
@@ -658,7 +649,7 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
     function simplifyStepsWithParent(steps) {
         var parentStep = steps.slice(-1);
         var sliced = steps.slice(0, 1);
-        while (sliced.length < (steps.length - 1)) {
+        while (sliced.length < steps.length - 1) {
             var selector = buildSelector([sliced, parentStep]);
             if (isUniqueSelector(selector)) {
                 break;
@@ -724,7 +715,7 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
         var stepsCopy = steps.slice();
         stepsCopy.reverse();
         //check steps is regular array of steps
-        if (typeof(stepsCopy[0].value) !== "undefined") {
+        if (typeof stepsCopy[0].value !== "undefined") {
             return stepsCopy.join(" > ");
         } else {
             return _.reduce(stepsCopy, function (previosValue, currentValue) {
