@@ -284,13 +284,15 @@ function autogenCheck(val) {
  * @param {boolean?} options.withoutNthChild
  * @param {boolean?} options.optimized
  * @param {Node?} options.targetNode
+ * @param {Node?} options.until
  * @class
  * @constructor
  */
 function SelectorGeneratorStep(options) {
     options = options || {
         withoutNthChild: false,
-        targetNode: null
+        targetNode: null,
+        until: null
     };
 
     /**
@@ -313,7 +315,7 @@ function SelectorGeneratorStep(options) {
             var id = node.getAttribute("id");
             return new DomNodePathStep(nodeName + idSelector(id), true);
         }
-        var isRootNode = !parent || parent.nodeType === 9;
+        var isRootNode = !parent || parent.nodeType === 9 || parent == options.until;
         if (isRootNode) // document node
             {
                 return new DomNodePathStep(nodeName, true);
@@ -506,7 +508,7 @@ function SelectorGeneratorStep(options) {
  * @class
  * get unique selector, path of node
  * @param {Object?} options
- * @param {function?} options.querySelectorAll
+ * @param {Element} options.until
  * @constructor
  */
 function SelectorGenerator(options) {
@@ -554,7 +556,7 @@ function SelectorGenerator(options) {
         if (!node || node.nodeType !== 1) {
             return "";
         }
-        var selectorGeneratorStep = new SelectorGeneratorStep({ targetNode: node });
+        var selectorGeneratorStep = new SelectorGeneratorStep({ targetNode: node, until: options.until });
         var steps = [];
         var contextNode = node;
         while (contextNode) {
@@ -732,10 +734,11 @@ function SelectorGenerator(options) {
      * @return {boolean} unique selector?
      */
     function isUniqueSelector(selector) {
-        if (!options.querySelectorAll) {
-            return true;
+        if (options.until) {
+            return options.until.querySelectorAll(selector).length < 2;
+        } else {
+            return document.body.querySelectorAll(selector).length < 2;
         }
-        return options.querySelectorAll(selector).length < 2;
     }
 
     /**

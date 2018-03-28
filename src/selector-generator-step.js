@@ -8,13 +8,15 @@ import { autogenCheck } from './autogen-check';
  * @param {boolean?} options.withoutNthChild
  * @param {boolean?} options.optimized
  * @param {Node?} options.targetNode
+ * @param {Node?} options.until
  * @class
  * @constructor
  */
 function SelectorGeneratorStep(options) {
     options = options || {
             withoutNthChild: false,
-            targetNode: null
+            targetNode: null,
+            until: null,
         };
 
     /**
@@ -37,7 +39,7 @@ function SelectorGeneratorStep(options) {
             var id = node.getAttribute("id");
             return new DomNodePathStep(nodeName + idSelector(id), true);
         }
-        var isRootNode = !parent || parent.nodeType === 9;
+        var isRootNode = !parent || parent.nodeType === 9 || parent == options.until;
         if (isRootNode) // document node
         {
             return new DomNodePathStep(nodeName, true);

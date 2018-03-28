@@ -5,7 +5,7 @@ import SelectorGeneratorStep from './selector-generator-step';
  * @class
  * get unique selector, path of node
  * @param {Object?} options
- * @param {function?} options.querySelectorAll
+ * @param {Element} options.until
  * @constructor
  */
 function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
@@ -50,7 +50,7 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
         if (!node || node.nodeType !== 1) {
             return "";
         }
-        var selectorGeneratorStep = new SelectorGeneratorStep({targetNode: node});
+        var selectorGeneratorStep = new SelectorGeneratorStep({ targetNode: node, until: options.until });
         var steps = [];
         var contextNode = node;
         while (contextNode) {
@@ -228,10 +228,11 @@ function SelectorGenerator(options) { //eslint-disable-line no-unused-vars
      * @return {boolean} unique selector?
      */
     function isUniqueSelector(selector) {
-        if (!options.querySelectorAll) {
-            return true;
+        if (options.until) {
+            return options.until.querySelectorAll(selector).length < 2;
+        } else {
+            return document.body.querySelectorAll(selector).length < 2;
         }
-        return options.querySelectorAll(selector).length < 2;
     }
 
     /**
